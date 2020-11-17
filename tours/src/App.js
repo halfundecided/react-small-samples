@@ -1,36 +1,63 @@
-import React, { useState, useEffect } from 'react'
-import Loading from './Loading'
-import Tours from './Tours'
+import React, { useState, useEffect } from 'react';
+import Loading from './Loading';
+import Tours from './Tours';
 
-
-const url = 'https://course-api.com/react-tours-project'
+const url = 'https://course-api.com/react-tours-project';
 function App() {
-  const [loading, setLoading] = useState(true)
-  const [tours, setTours] = useState([])
+	const [loading, setLoading] = useState(true);
+	const [tours, setTours] = useState([]);
 
-  const fetchTours = async () => {
-    setLoading(true)
-    const response = await fetch(url)
-    const tours = await response.json();
-    console.log(tours)
-  }
+	const removeTour = (id) => {
+		const newTours = tours.filter((tour) => tour.id !== id);
+		setTours(newTours);
+	};
 
-  /**
-   * By default, it runs after every re-render
-   * Callback function 
-   * Second parameter: []; run only on initial render
-   *                    [something]; re-run the errect if something changes 
-   * You can have multiple useEffect functions 
-   */
-  useEffect(() => {
-    fetchTours();
-  }, [])
+	const fetchTours = async () => {
+		setLoading(true); // initiate loading state
+		try {
+			const response = await fetch(url);
+			const tours = await response.json();
+			setLoading(false);
+			setTours(tours);
+		} catch (error) {
+			setLoading(false);
+			console.log(error);
+		}
+	};
 
-  if (loading) {
-    return <Loading />
-  } 
+	/**
+	 * By default, it runs after every re-render
+	 * Callback function
+	 * Second parameter: []; run only on initial render
+	 *                    [something]; re-run the errect if something changes
+	 * You can have multiple useEffect functions
+	 */
+	useEffect(() => {
+		fetchTours();
+	}, []);
 
-  return (<main><Tours /></main>)
+	if (loading) {
+		return <Loading />;
+	}
+
+	if (tours.length === 0) {
+		return (
+			<main>
+				<div className='title'>
+					<h2>no tour left...</h2>
+					<button className='btn' onClick={fetchTours}>
+						Refresh
+					</button>
+				</div>
+			</main>
+		);
+	}
+
+	return (
+		<main>
+			<Tours tours={tours} removeTour={removeTour} />
+		</main>
+	);
 }
 
-export default App
+export default App;
